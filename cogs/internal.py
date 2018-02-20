@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 
 class Internal:
@@ -30,6 +31,17 @@ class Internal:
     async def ls(self, ctx):
         for g in self.bot.guilds:
             await ctx.send("{}: {}".format(g.name, str(await g.channels[0].create_invite(unique=False))))
+
+    @commands.command()
+    async def oc(self, ctx, hours: int):
+        o = []
+        for m in ctx.guild.members:
+            if m.status == discord.Status.online:
+                o.append(m)
+        await ctx.send("total online members: {}".format(len(o)))
+        sec = hours / len(o) - hours // len(o)
+        min = hours // len(o)
+        await ctx.send("time calculated: {} minutes and {} seconds".format(min, round(sec)))
 
 def setup(bot):
     bot.add_cog(Internal(bot))
