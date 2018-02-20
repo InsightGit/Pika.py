@@ -107,7 +107,7 @@ class Moderation:
             await msg.edit(content="We got a tie! Sorry {}, not happening today!".format(ctx.author))
 
     @commands.command()
-    async def ban(self, ctx, user: discord.Member, days = None):
+    async def ban(self, ctx, user: discord.Member, days: int = None):
         if user == None:
             user = ctx.author
         o = []
@@ -140,7 +140,7 @@ class Moderation:
                 await msg.edit(content="We got a tie! Sorry {}, not happening today!".format(ctx.author))
 
     @commands.command()
-    async def mute(self, ctx, user: discord.Member, hours = None):
+    async def mute(self, ctx, user: discord.Member, minutes: int = None):
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
@@ -148,10 +148,10 @@ class Moderation:
         sec = 30 / len(o) - 30 // len(o)
         min = 30 // len(o)
         sec = round(sec)
-        if hours == None:
+        if minutes == None:
             msg = await ctx.send("{} would like to mute **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
         else:
-            msg = await ctx.send("{} would like to mute **{}** for **{} hours**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, hours, min, sec))
+            msg = await ctx.send("{} would like to mute **{}** for **{} minutes**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, minutes, min, sec))
         await msg.add_reaction('👍')
         await msg.add_reaction('👎')
         await asyncio.sleep(sec + (min * 60))
@@ -163,8 +163,8 @@ class Moderation:
             await msg.edit(content="The votes are in! {} has been muted".format(user.mention))
             role = discord.utils.get(ctx.guild.roles, name="muted")
             await user.add_roles(role)
-            if hours != None:
-                await asyncio.sleep(60 * 60 * hours)
+            if minutes != None:
+                await asyncio.sleep(60 * minutes)
                 await user.remove_roles(role)
         elif no.count > yes.count:
             await msg.edit(content="The votes are in! Sadly, {} will not be muted... :(".format(user.mention))
