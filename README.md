@@ -18,8 +18,8 @@ After that, make sure you edit the **bot owner ID** and the **bot token** in ``b
 Then run ``bot.py``, and you're off!
 
 # Thanks to
-* Rapptz, for creating discord.py
-* Maki, for the name idea
+* [Rapptz](https://github.com/Rapptz], for creating discord.py
+* [Maki](https://maki.cat), for the name idea
 * Everyone on the me_irl discord for helping out!
 * All of the very helpful testers on the [Discord server!](https://discord.gg/8vFPUhV)
 * You, for reading this!
