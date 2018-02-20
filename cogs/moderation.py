@@ -141,6 +141,7 @@ class Moderation:
 
     @commands.command()
     async def mute(self, ctx, user: discord.Member, minutes: int = None):
+        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
@@ -161,7 +162,11 @@ class Moderation:
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
             await msg.edit(content="The votes are in! {} has been muted".format(user.mention))
-            role = discord.utils.get(ctx.guild.roles, name="muted")
+            table = db["config"]
+            if table.find_one(key="muted_role")["value"] == muted or table.find_one(key="muted_role") == None:
+                role = discord.utils.get(ctx.guild.roles, name="muted")
+            else:
+                role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
             await user.add_roles(role)
             if minutes != None:
                 await asyncio.sleep(60 * minutes)
@@ -341,6 +346,49 @@ class Moderation:
                 else:
                     continue
             await ctx.send("members of this room: ```{}```".format(", ".join(ml)))
+
+    @commands.group()
+    async def config(self, ctx):
+        if not ctx.author.guild_permissions.manage_guild:
+            await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
+            return
+        elif ctx.invoked_subcommand is None:
+            await ctx.send("```Values you can edit using !config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"```")
+
+    @config.command()
+    async def set(self, ctx, key, value):
+        if not ctx.author.guild_permissions.manage_guild:
+            await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
+            return
+        else:
+            db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+            table = db["config"]
+            if key.lower() == "muted_role":
+                if table.find_one(key="muted_role"):
+                    table.update(dict(key="muted_role", value=value), ["key"])
+                else:
+                    table.insert(dict(key="muted_role", value=value))
+                await ctx.send("Config updated!")
+            else:
+                await ctx.send("Hmm... that's not a valid key!")
+                return
+
+    @config.command()
+    async def get(self, ctx, key):
+        if not ctx.author.guild_permissions.manage_guild:
+            await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
+            return
+        else:
+            db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+            table = db["config"]
+            if key.lower() == "muted_role":
+                if table.find_one(key="muted_role"):
+                    await ctx.send("``muted_role``'s current value is: ``{}``".format(table.find_one(key="muted_role")["value"]))
+                else:
+                    await ctx.send("``muted_role``'s current value is: ``muted``")
+            else:
+                await ctx.send("Hmm... that's not a valid key!")
+                return
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
