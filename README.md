@@ -6,6 +6,17 @@
 * Many fun commands!
 * It's a Pikachu, come on! You got to love it!
 
+# How to Run It
+Oh, you want to run it? Sweet!
+Make sure you got the discord.py rewrite installed, and these packages aswell:
+```
+dataset
+pyshorteners
+pokebase
+```
+After that, make sure you edit the **bot owner ID** and the **bot token** in ``bot.py``.
+Then run ``bot.py``, and you're off!
+
 # Thanks to
 * Rapptz, for creating discord.py
 * Maki, for the name idea
