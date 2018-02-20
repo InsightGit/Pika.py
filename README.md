@@ -2,7 +2,7 @@
 🤖 A Discord Bot for the power-user in all of us!
 
 # Features
-* An awesome Moderation system!
+* An awesome Moderation system, including an unique voting system for nickname changes, kicks, bans, and mutes!
 * Many fun commands!
 * It's a Pikachu, come on! You got to love it!
 
@@ -23,3 +23,9 @@ Then run ``bot.py``, and you're off!
 * Everyone on the me_irl discord for helping out!
 * All of the very helpful testers on the [Discord server!](https://discord.gg/8vFPUhV)
 * You, for reading this!
+
+# TODO
+[] Add a ``!config`` command
+[] More. Commands
+[] Grammer changes and such
+[] Actually get hosting
