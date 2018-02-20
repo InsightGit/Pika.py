@@ -342,16 +342,5 @@ class Moderation:
                     continue
             await ctx.send("members of this room: ```{}```".format(", ".join(ml)))
 
-    @commands.command()
-    async def oc(self, ctx, hours: int):
-        o = []
-        for m in ctx.guild.members:
-            if m.status == discord.Status.online:
-                o.append(m)
-        await ctx.send("total online members: {}".format(len(o)))
-        sec = hours / len(o) - hours // len(o)
-        min = hours // len(o)
-        await ctx.send("time calculated: {} minutes and {} seconds".format(min, round(sec)))
-
 def setup(bot):
     bot.add_cog(Moderation(bot))
