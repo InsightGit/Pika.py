@@ -11,6 +11,7 @@ async def on_ready():
     bot.load_extension("cogs.fun")
     bot.load_extension("cogs.factions")
     bot.load_extension("cogs.moderation")
+    bot.load_extension("cogs.starboard")
     await bot.change_presence(game=discord.Game(name="with thunderbolts | v1.0 RC2"))
     print("ready")
 
