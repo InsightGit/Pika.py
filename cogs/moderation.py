@@ -30,8 +30,8 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 30 / len(o) - 30 // len(o)
-        min = 30 // len(o)
+        sec = 60 / len(o) - 60 // len(o)
+        min = 60 // len(o)
         sec = round(sec)
         if user == ctx.author:
             msg = await ctx.send("{} would like to change their nickname to **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(user.mention, nick, min, sec))
@@ -61,8 +61,8 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 30 / len(o) - 30 // len(o)
-        min = 30 // len(o)
+        sec = 60 / len(o) - 60 // len(o)
+        min = 60 // len(o)
         sec = round(sec)
         msg = await ctx.send("{} would like to kick **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
         await msg.add_reaction('👍')
@@ -86,8 +86,8 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 30 / len(o) - 30 // len(o)
-        min = 30 // len(o)
+        sec = 60 / len(o) - 60 // len(o)
+        min = 60 // len(o)
         sec = round(sec)
         msg = await ctx.send("{} would like to change this channel's topic to **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, topic, min, sec))
         await msg.add_reaction('👍')
@@ -114,8 +114,8 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 30 / len(o) - 30 // len(o)
-        min = 30 // len(o)
+        sec = 60 / len(o) - 60 // len(o)
+        min = 60 // len(o)
         sec = round(sec)
         if days == None:
             msg = await ctx.send("{} would like to ban **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
@@ -146,8 +146,8 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 30 / len(o) - 30 // len(o)
-        min = 30 // len(o)
+        sec = 60 / len(o) - 60 // len(o)
+        min = 60 // len(o)
         sec = round(sec)
         if minutes == None:
             msg = await ctx.send("{} would like to mute **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
@@ -163,7 +163,7 @@ class Moderation:
         if yes.count > no.count:
             await msg.edit(content="The votes are in! {} has been muted".format(user.mention))
             table = db["config"]
-            if table.find_one(key="muted_role")["value"] == muted or table.find_one(key="muted_role") == None:
+            if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
                 role = discord.utils.get(ctx.guild.roles, name="muted")
             else:
                 role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
@@ -182,8 +182,8 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 30 / len(o) - 30 // len(o)
-        min = 30 // len(o)
+        sec = 60 / len(o) - 60 // len(o)
+        min = 60 // len(o)
         sec = round(sec)
         msg = await ctx.send("{} would like to unmute **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
         await msg.add_reaction('👍')
@@ -353,7 +353,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         elif ctx.invoked_subcommand is None:
-            await ctx.send("```Values you can edit using !config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"```")
+            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Defaults to \"starboard\"```")
 
     @config.command()
     async def set(self, ctx, key, value):
@@ -368,6 +368,12 @@ class Moderation:
                     table.update(dict(key="muted_role", value=value), ["key"])
                 else:
                     table.insert(dict(key="muted_role", value=value))
+                await ctx.send("Config updated!")
+            elif key.lower() == "starboard_channel":
+                if table.find_one(key="starboard_channel"):
+                    table.update(dict(key="starboard_channel", value=value), ["key"])
+                else:
+                    table.insert(dict(key="starboard_channel", value=value))
                 await ctx.send("Config updated!")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
@@ -386,6 +392,11 @@ class Moderation:
                     await ctx.send("``muted_role``'s current value is: ``{}``".format(table.find_one(key="muted_role")["value"]))
                 else:
                     await ctx.send("``muted_role``'s current value is: ``muted``")
+            elif key.lower() == "starboard_channel":
+                if table.find_one(key="starboard_channel"):
+                    await ctx.send("``starboard_channel``'s current value is: ``{}``".format(table.find_one(key="starboard_channel")["value"]))
+                else:
+                    await ctx.send("``starboard_channel``'s current value is: ``starboard``")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
