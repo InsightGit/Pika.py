@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import dataset
 
 class Internal:
     def __init__(self, bot):
@@ -42,6 +43,20 @@ class Internal:
         sec = hours / len(o) - hours // len(o)
         min = hours // len(o)
         await ctx.send("time calculated: {} minutes and {} seconds".format(min, round(sec)))
+
+    @commands.command()
+    @commands.is_owner()
+    async def csb(self, ctx):
+        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        for r in db["starboard"]:
+            db["starboard"].delete(message=r["message"])
+        await ctx.send("done? starboard db *should* be cleared...")
+
+    @commands.command()
+    @commands.is_owner()
+    async def startest(self, ctx):
+        m = await ctx.send("test dont star")
+        await m.add_reaction('⭐')
 
 def setup(bot):
     bot.add_cog(Internal(bot))
