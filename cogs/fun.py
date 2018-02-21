@@ -14,6 +14,20 @@ class Fun:
     async def pokesearch(self, ctx, pokemon):
         """Searches for a Pokemon using PokeAPI"""
         async with ctx.channel.typing():
+            # inside jokes from ember
+            if pokemon.lower() == "c0ber":
+                await ctx.send(file=discord.File("pokemon/oofasd.png"))
+                return
+            elif pokemon.lower() == "metoothanks":
+                await ctx.send(file=discord.File("pokemon/uhhmetoothanks.png"))
+                return
+            elif pokemon.lower() == "2hats":
+                await ctx.send(file=discord.File("pokemon/faw.png"))
+                return
+            elif pokemon.lower() == "tj":
+                await ctx.send(file=discord.File("pokemon/tj.png"))
+                return
+
             try:
                 pkmn = pb.pokemon(pokemon.lower())
             except:
