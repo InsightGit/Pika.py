@@ -3,6 +3,7 @@ from discord.ext import commands
 import asyncio
 import random
 import dataset
+import pytimeparse
 
 class Moderation:
     def __init__(self, bot):
@@ -20,6 +21,7 @@ class Moderation:
 
     @commands.command()
     async def changenick(self, ctx, nick, user: discord.Member = None):
+        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
         if len(nick) > 32:
             embed = discord.Embed(color=0xffff00, description="Sorry, you reached the character limit on nicknames!")
             await ctx.send(embed=embed)
@@ -30,44 +32,57 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 60 / len(o) - 60 // len(o)
-        min = 60 // len(o)
-        sec = round(sec)
-        if user == ctx.author:
-            msg = await ctx.send("{} would like to change their nickname to **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(user.mention, nick, min, sec))
+        if config.find_one(key="lvl1_vote_time")["value"] is None or config.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+            sec = 60
+            m, s = divmod(60, 60)
+            h, m = divmod(m, 60)
         else:
-            msg = await ctx.send("{} would like to change {}'s nickname to {}! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, nick, min, sec))
+            sec = config.find_one(key="lvl1_vote_time")["value"]
+            m, s = divmod(int(config.find_one(key="lvl1_vote_time")["value"]), 60)
+            h, m = divmod(m, 60)
+        if user == ctx.author:
+            msg = await ctx.send("{} would like to change their nickname to **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(user.mention, nick, h, m, s))
+        else:
+            msg = await ctx.send("{} would like to change {}'s nickname to **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, nick, h, m, s))
         await msg.add_reaction('👍')
         await msg.add_reaction('👎')
-        await asyncio.sleep(sec + (min * 60))
+        await asyncio.sleep(sec)
         h = await ctx.channel.history(limit=500).flatten()
         msg = discord.utils.get(h, id=msg.id)
         yes = discord.utils.get(msg.reactions, emoji='👍')
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
-            await msg.edit(content="The votes are in! {} is now known as {}!".format(user.mention, nick))
+            if user.nick is None:
+                await msg.edit(content="The votes are in! **{}** is now known as **{}**!".format(user.name, nick))
+            else:
+                await msg.edit(content="The votes are in! **{}** (previous nickname: \"{}\") is now known as **{}**!".format(user.name, user.nick, nick))
             await user.edit(nick=nick)
         elif no.count > yes.count:
-            await msg.edit(
-                content="The votes are in! Sadly, {}'s nickname will not be changed... :(".format(user.mention))
+            await msg.edit(content="The votes are in! Sadly, {}'s nickname will not be changed... :(".format(user.mention))
         elif yes.count == no.count:
-            await msg.edit(content="We got a tie! Sorry {}, not happening today!".format(user.mention))
+            await msg.edit(content="We got a tie! Sorry {}, not happening today!".format(ctx.author.mention))
 
     @commands.command()
     async def kick(self, ctx, user: discord.Member):
+        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
         if user == None:
             user = ctx.author
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 60 / len(o) - 60 // len(o)
-        min = 60 // len(o)
-        sec = round(sec)
-        msg = await ctx.send("{} would like to kick **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
+        if config.find_one(key="lvl2_vote_time")["value"] is None or config.find_one(key="lvl2_vote_time")["value"] == "5 minutes":
+            sec = 60
+            m, s = divmod(60, 60)
+            h, m = divmod(m, 60)
+        else:
+            sec = config.find_one(key="lvl2_vote_time")["value"]
+            m, s = divmod(int(config.find_one(key="lvl2_vote_time")["value"]), 60)
+            h, m = divmod(m, 60)
+        msg = await ctx.send("{} would like to kick **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, h, m, s))
         await msg.add_reaction('👍')
         await msg.add_reaction('👎')
-        await asyncio.sleep(sec + (min * 60))
+        await asyncio.sleep(sec)
         h = await ctx.channel.history(limit=500).flatten()
         msg = discord.utils.get(h, id=msg.id)
         yes = discord.utils.get(msg.reactions, emoji='👍')
@@ -82,48 +97,60 @@ class Moderation:
 
     @commands.command()
     async def topic(self, ctx, *, topic):
+        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 60 / len(o) - 60 // len(o)
-        min = 60 // len(o)
-        sec = round(sec)
-        msg = await ctx.send("{} would like to change this channel's topic to **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, topic, min, sec))
+        if config.find_one(key="lvl1_vote_time")["value"] is None or config.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+            sec = 60
+            m, s = divmod(60, 60)
+            h, m = divmod(m, 60)
+        else:
+            sec = config.find_one(key="lvl1_vote_time")["value"]
+            m, s = divmod(int(config.find_one(key="lvl1_vote_time")["value"]), 60)
+            h, m = divmod(m, 60)
+        msg = await ctx.send("{} would like to change this channel's topic to **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, topic, h, m, s))
         await msg.add_reaction('👍')
         await msg.add_reaction('👎')
-        await asyncio.sleep(sec + (min * 60))
+        await asyncio.sleep(sec)
         h = await ctx.channel.history(limit=500).flatten()
         msg = discord.utils.get(h, id=msg.id)
         yes = discord.utils.get(msg.reactions, emoji='👍')
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
-            await msg.edit(content="The votes are in! The channel topic has been changed to **{}**!".format(topic))
+            if ctx.channel.topic is None:
+                await msg.edit(content="The votes are in! The channel topic has been changed to **{}**!".format(topic))
+            else:
+                await msg.edit(content="The votes are in! The channel topic has been changed to **{}**! (previous topic being: \"{}\")".format(topic, ctx.channel.topic))
             await ctx.channel.edit(topic=topic)
         elif no.count > yes.count:
-            await msg.edit(
-                content="The votes are in! Sadly, the channel topic will not be changed... :(")
+            await msg.edit(content="The votes are in! Sadly, the channel topic will not be changed... :(")
         elif yes.count == no.count:
             await msg.edit(content="We got a tie! Sorry {}, not happening today!".format(ctx.author))
 
     @commands.command()
     async def ban(self, ctx, user: discord.Member, days: int = None):
-        if user == None:
-            user = ctx.author
+        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 60 / len(o) - 60 // len(o)
-        min = 60 // len(o)
-        sec = round(sec)
-        if days == None:
-            msg = await ctx.send("{} would like to ban **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
+        if config.find_one(key="lvl2_vote_time")["value"] is None or config.find_one(key="lvl2_vote_time")["value"] == "5 minutes":
+            sec = 60
+            m, s = divmod(60, 60)
+            h, m = divmod(m, 60)
         else:
-            msg = await ctx.send("{} would like to ban **{}** for **{} days**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, days, min, sec))
+            sec = config.find_one(key="lvl2_vote_time")["value"]
+            m, s = divmod(int(config.find_one(key="lvl2_vote_time")["value"]), 60)
+            h, m = divmod(m, 60)
+        if days == None:
+            msg = await ctx.send("{} would like to ban **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, h, m, s))
+        else:
+            msg = await ctx.send("{} would like to ban **{}** for **{} days**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, days, h, m, s))
         await msg.add_reaction('👍')
         await msg.add_reaction('👎')
-        await asyncio.sleep(sec + (min * 60))
+        await asyncio.sleep(sec)
         h = await ctx.channel.history(limit=500).flatten()
         msg = discord.utils.get(h, id=msg.id)
         yes = discord.utils.get(msg.reactions, emoji='👍')
@@ -142,27 +169,32 @@ class Moderation:
     @commands.command()
     async def mute(self, ctx, user: discord.Member, minutes: int = None):
         db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        table = db["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 60 / len(o) - 60 // len(o)
-        min = 60 // len(o)
-        sec = round(sec)
-        if minutes == None:
-            msg = await ctx.send("{} would like to mute **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
+        if table.find_one(key="lvl1_vote_time")["value"] is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+            sec = 60
+            m, s = divmod(60, 60)
+            h, m = divmod(m, 60)
         else:
-            msg = await ctx.send("{} would like to mute **{}** for **{} minutes**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, minutes, min, sec))
+            sec = table.find_one(key="lvl1_vote_time")["value"]
+            m, s = divmod(int(table.find_one(key="lvl1_vote_time")["value"]), 60)
+            h, m = divmod(m, 60)
+        if minutes == None:
+            msg = await ctx.send("{} would like to mute **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, h, m, s))
+        else:
+            msg = await ctx.send("{} would like to mute **{}** for **{} minutes**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, minutes, h, m, s))
         await msg.add_reaction('👍')
         await msg.add_reaction('👎')
-        await asyncio.sleep(sec + (min * 60))
+        await asyncio.sleep(sec)
         h = await ctx.channel.history(limit=500).flatten()
         msg = discord.utils.get(h, id=msg.id)
         yes = discord.utils.get(msg.reactions, emoji='👍')
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
             await msg.edit(content="The votes are in! {} has been muted".format(user.mention))
-            table = db["config"]
             if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
                 role = discord.utils.get(ctx.guild.roles, name="muted")
             else:
@@ -178,17 +210,24 @@ class Moderation:
 
     @commands.command()
     async def unmute(self, ctx, user: discord.Member):
+        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        table = db["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        sec = 60 / len(o) - 60 // len(o)
-        min = 60 // len(o)
-        sec = round(sec)
-        msg = await ctx.send("{} would like to unmute **{}**! Let's vote, shall we? You have **{} minutes and {} seconds** to vote.".format(ctx.author.mention, user.mention, min, sec))
+        if table.find_one(key="lvl1_vote_time")["value"] is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+            sec = 60
+            m, s = divmod(60, 60)
+            h, m = divmod(m, 60)
+        else:
+            sec = table.find_one(key="lvl1_vote_time")["value"]
+            m, s = divmod(int(table.find_one(key="lvl1_vote_time")["value"]), 60)
+            h, m = divmod(m, 60)
+        msg = await ctx.send("{} would like to unmute **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, h, m, s))
         await msg.add_reaction('👍')
         await msg.add_reaction('👎')
-        await asyncio.sleep(sec + (min * 60))
+        await asyncio.sleep(sec)
         h = await ctx.channel.history(limit=500).flatten()
         msg = discord.utils.get(h, id=msg.id)
         yes = discord.utils.get(msg.reactions, emoji='👍')
@@ -353,7 +392,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         elif ctx.invoked_subcommand is None:
-            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Defaults to \"starboard\"```")
+            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Defaults to \"starboard\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1 minute\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"10 minutes\"```")
 
     @config.command()
     async def set(self, ctx, key, value):
@@ -374,6 +413,18 @@ class Moderation:
                     table.update(dict(key="starboard_channel", value=value), ["key"])
                 else:
                     table.insert(dict(key="starboard_channel", value=value))
+                await ctx.send("Config updated!")
+            elif key.lower() == "lvl1_vote_time":
+                if table.find_one(key="lvl1_vote_time"):
+                    table.update(dict(key="lvl1_vote_time", value=pytimeparse.parse(value)), ["key"])
+                else:
+                    table.insert(dict(key="lvl1_vote_time", value=pytimeparse.parse(value)))
+                await ctx.send("Config updated!")
+            elif key.lower() == "lvl2_vote_time":
+                if table.find_one(key="lvl2_vote_time"):
+                    table.update(dict(key="lvl2_vote_time", value=pytimeparse.parse(value)), ["key"])
+                else:
+                    table.insert(dict(key="lvl2_vote_time", value=pytimeparse.parse(value)))
                 await ctx.send("Config updated!")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
@@ -397,6 +448,16 @@ class Moderation:
                     await ctx.send("``starboard_channel``'s current value is: ``{}``".format(table.find_one(key="starboard_channel")["value"]))
                 else:
                     await ctx.send("``starboard_channel``'s current value is: ``starboard``")
+            elif key.lower() == "lvl1_vote_time":
+                if table.find_one(key="lvl1_vote_time"):
+                    await ctx.send("``lvl1_vote_time``'s current value is: ``{}``".format(table.find_one(key="lvl1_vote_time")["value"]))
+                else:
+                    await ctx.send("``lvl1_vote_time``'s current value is: ``1 minute``")
+            elif key.lower() == "lvl2_vote_time":
+                if table.find_one(key="lvl2_vote_time"):
+                    await ctx.send("``lvl2_vote_time``'s current value is: ``{}``".format(table.find_one(key="lvl2_vote_time")["value"]))
+                else:
+                    await ctx.send("``lvl2_vote_time``'s current value is: ``10 minutes``")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
