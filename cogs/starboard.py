@@ -19,7 +19,7 @@ class Starboard:
                     return
                 embed = discord.Embed(title="Message by {} starred".format(reaction.message.author.name), description="{}".format(reaction.message.content), color=0xffff00)
                 embed.set_footer(text="This message has received 1 ⭐")
-                if reaction.message.attachments[0].url is not None:
+                if reaction.message.attachments:
                     embed.set_image(url=reaction.message.attachments[0].url)
                 msg = await channel.send(embed=embed)
                 table.insert(dict(message=reaction.message.id, stars=1, starmessage=msg.id))
@@ -35,7 +35,7 @@ class Starboard:
                 msg = discord.utils.get(await channel.history().flatten(), id=data["starmessage"])
                 embed = discord.Embed(title="Message by {} starred".format(reaction.message.author.name), description="{}".format(reaction.message.content), color=0xffff00)
                 embed.set_footer(text="This message has received {} ⭐'s".format(data["stars"]))
-                if reaction.message.attachments[0].url is not None:
+                if reaction.message.attachments:
                     embed.set_image(url=reaction.message.attachments[0].url)
                 await msg.edit(embed=embed)
 
@@ -61,13 +61,13 @@ class Starboard:
                 if stars == 1:
                     embed = discord.Embed(title="Message by {} starred".format(reaction.message.author.name), description="{}".format(reaction.message.content), color=0xffff00)
                     embed.set_footer(text="This message has received 1 ⭐")
-                    if reaction.message.attachments[0].url is not None:
+                    if reaction.message.attachments:
                         embed.set_image(url=reaction.message.attachments[0].url)
                     await msg.edit(embed=embed)
                 else:
                     embed = discord.Embed(title="Message by {} starred".format(reaction.message.author.name), description="{}".format(reaction.message.content), color=0xffff00)
                     embed.set_footer(text="This message has received {} ⭐'s".format(data["stars"]))
-                    if reaction.message.attachments[0].url is not None:
+                    if reaction.message.attachments:
                         embed.set_image(url=reaction.message.attachments[0].url)
                     await msg.edit(embed=embed)
 
