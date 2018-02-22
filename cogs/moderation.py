@@ -310,7 +310,7 @@ class Moderation:
             await user.remove_roles(role)
             await ctx.send("removed!")
 
-    @room.command()
+    @room.command(aliases=["delet"])
     async def delete(self, ctx):
         db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
         table = db["rooms"]
