@@ -19,5 +19,4 @@ async def about(ctx):
     embed = discord.Embed(color=0xffff00, title="About", description="**Pika.py** v1.0\n\nCreated with love by ThatNerdyPikachu and friends, including:\nthe me_irl discord server\n2Hats\nMaster9000\nKronos\nMaki (for the name)\nFrederikTheDane")
     embed.set_footer(text="Thanks for checking me out! <3")
     await ctx.send(embed=embed)
-
 bot.run("your token")
