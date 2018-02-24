@@ -8,7 +8,7 @@ class Economy:
         self.bot = bot
 
     async def on_message(self, message):
-        db = dataset.connect("sqlite:///{}.db".format(message.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(message.guild.id))
         for user in message.guild.members:
             if db["xp"].find_one(user=user.id):
                 continue
@@ -34,7 +34,7 @@ class Economy:
     @commands.command()
     async def xp(self, ctx, user: discord.Member = None):
         """Check a users XP!"""
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         if user == None:
             user = ctx.author
         elif user == self.bot.user:
@@ -49,16 +49,14 @@ class Economy:
         table = db["xp"]
         data = table.find_one(user=user.id)
         xp = data["xp"]
-        embed = discord.Embed(title="{}'s XP".format(user.display_name), description="This user has {} XP points!".format(xp), color=0xffff00)
-        embed.set_author(name="Pika.py",
-                         icon_url =
-                         "https://img00.deviantart.net/172c/i/2013/188/f/8/robot_pikachu_by_spice5400-d6ceutv.png")
+        embed = discord.Embed(title="{}'s XP".format(user.display_name), description="This user has **{}** XP points and is level **{}**!".format(xp, round(xp/50)), color=0xffff00)
+        embed.set_author(name="Pika.py", icon_url="https://img00.deviantart.net/172c/i/2013/188/f/8/robot_pikachu_by_spice5400-d6ceutv.png")
         await ctx.send(embed=embed)
 
     @commands.command()
     async def rr(self, ctx, bet: int):
         """Russian Roulette! Bet some XP!"""
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["xp"]
         data = table.find_one(user=ctx.author.id)
         if bet < 10:
@@ -90,10 +88,24 @@ class Economy:
     @commands.command()
     @commands.is_owner()
     async def setxp(self, ctx, user: discord.Member, xp):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["xp"]
         table.update(dict(user=user.id, xp=xp), ["user"])
         await ctx.send("done")
+
+    @commands.command()
+    async def leaderboard(self, ctx):
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
+        table = db["xp"]
+        lb = sorted(table.all(), key=lambda x: x["xp"], reverse=True)
+        lebo = []
+        place = 1
+        for p in lb:
+            if p["xp"] < 15 or discord.utils.get(ctx.guild.members, id=p["user"]) is None:
+                continue
+            lebo.append("{}. {} with {} XP at level {}".format(place, discord.utils.get(ctx.guild.members, id=p["user"]).name, p["xp"], round(p["xp"]/50)))
+            place += 1
+        await ctx.send("```{}```".format("\n".join(lebo)))
 
 def setup(bot):
     bot.add_cog(Economy(bot))

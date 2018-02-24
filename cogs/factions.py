@@ -24,7 +24,7 @@ class Factions:
 
     @commands.command()
     async def gpoints(self, ctx):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         s = []
         t = []
         for user in ctx.guild.members:

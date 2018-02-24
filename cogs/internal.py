@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import dataset
 
 class Internal:
     def __init__(self, bot):
@@ -33,15 +34,18 @@ class Internal:
             await ctx.send("{}: {}".format(g.name, str(await g.channels[0].create_invite(unique=False))))
 
     @commands.command()
-    async def oc(self, ctx, hours: int):
-        o = []
-        for m in ctx.guild.members:
-            if m.status == discord.Status.online:
-                o.append(m)
-        await ctx.send("total online members: {}".format(len(o)))
-        sec = hours / len(o) - hours // len(o)
-        min = hours // len(o)
-        await ctx.send("time calculated: {} minutes and {} seconds".format(min, round(sec)))
+    @commands.is_owner()
+    async def csb(self, ctx):
+        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        for r in db["starboard"]:
+            db["starboard"].delete(message=r["message"])
+        await ctx.send("done? starboard db *should* be cleared...")
+
+    @commands.command()
+    @commands.is_owner()
+    async def startest(self, ctx):
+        m = await ctx.send("test dont star")
+        await m.add_reaction('⭐')
 
 def setup(bot):
     bot.add_cog(Internal(bot))
