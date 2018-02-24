@@ -477,6 +477,8 @@ class Moderation:
         if before.nick != after.nick:
             db = dataset.connect("sqlite:///{}.db".format(after.guild.id))
             table = db["config"]
+            if table.find_one(key="modlog_channel")["value"] == "off":
+                return
             if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
                 channel = discord.utils.get(after.guild.channels, name="modlog")
             else:
