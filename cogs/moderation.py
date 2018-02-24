@@ -392,7 +392,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         elif ctx.invoked_subcommand is None:
-            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"starboard\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"modlog\"```")
+            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"off\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"off\"```")
 
     @config.command()
     async def set(self, ctx, key, value):
@@ -453,7 +453,7 @@ class Moderation:
                 if table.find_one(key="starboard_channel"):
                     await ctx.send("``starboard_channel``'s current value is: ``{}``".format(table.find_one(key="starboard_channel")["value"]))
                 else:
-                    await ctx.send("``starboard_channel``'s current value is: ``starboard``")
+                    await ctx.send("``starboard_channel``'s current value is: ``off``")
             elif key.lower() == "lvl1_vote_time":
                 if table.find_one(key="lvl1_vote_time"):
                     await ctx.send("``lvl1_vote_time``'s current value is: ``{}``".format(table.find_one(key="lvl1_vote_time")["value"]))
@@ -468,16 +468,27 @@ class Moderation:
                 if table.find_one(key="modlog_channel"):
                     await ctx.send("``modlog_channel``'s current value is: ``{}``".format(table.find_one(key="modlog_channel")["value"]))
                 else:
-                    await ctx.send("``modlog_channel``'s current value is: ``modlog``")
+                    await ctx.send("``modlog_channel``'s current value is: ``off``")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
+
+    @config.command()
+    async def reset(self, ctx, key):
+        if not ctx.author.guild_permissions.manage_guild:
+            await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
+            return
+        else:
+            db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+            table = db["config"]
+            table.delete(key=key)
+            await ctx.send("Config updated!")
 
     async def on_member_update(self, before, after):
         if before.nick != after.nick:
             db = dataset.connect("sqlite:///{}.db".format(after.guild.id))
             table = db["config"]
-            if table.find_one(key="modlog_channel")["value"] == "off":
+            if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
                 return
             if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
                 channel = discord.utils.get(after.guild.channels, name="modlog")
@@ -499,7 +510,7 @@ class Moderation:
     async def on_member_join(self, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
@@ -512,7 +523,7 @@ class Moderation:
     async def on_member_remove(self, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
@@ -525,7 +536,7 @@ class Moderation:
     async def on_member_ban(self, guild, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
@@ -538,7 +549,7 @@ class Moderation:
     async def on_member_unban(self, guild, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
