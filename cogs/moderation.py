@@ -615,7 +615,6 @@ class Moderation:
         if not ctx.author.guild_permissions.manage_messages:
             await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
             return
-        if
         db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
         table = db["config"]
         if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
