@@ -195,6 +195,12 @@ class Moderation:
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
             await msg.edit(content="The votes are in! {} has been muted".format(user.mention))
+            if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
+                return
+            mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+            embed = discord.Embed(color=0xffff00, description="User **{}** has been muted".format(user.name))
+            embed.set_footer(text="User Mute", icon_url=user.avatar_url)
+            await mlchannel.send(embed=embed)
             if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
                 role = discord.utils.get(ctx.guild.roles, name="muted")
             else:
@@ -202,6 +208,9 @@ class Moderation:
             await user.add_roles(role)
             if minutes != None:
                 await asyncio.sleep(60 * minutes)
+                embed = discord.Embed(color=0xffff00, description="User **{}** has been unmuted".format(user.name))
+                embed.set_footer(text="User Unmute", icon_url=user.avatar_url)
+                await mlchannel.send(embed=embed)
                 await user.remove_roles(role)
         elif no.count > yes.count:
             await msg.edit(content="The votes are in! Sadly, {} will not be muted... :(".format(user.mention))
@@ -234,7 +243,16 @@ class Moderation:
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
             await msg.edit(content="The votes are in! {} has been unmuted".format(user.mention))
-            role = discord.utils.get(ctx.guild.roles, name="muted")
+            if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
+                role = discord.utils.get(ctx.guild.roles, name="muted")
+            else:
+                role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
+            if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
+                return
+            mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+            embed = discord.Embed(color=0xffff00, description="User **{}** has been unmuted".format(user.name))
+            embed.set_footer(text="User Unmute", icon_url=user.avatar_url)
+            await mlchannel.send(embed=embed)
             await user.remove_roles(role)
         elif no.count > yes.count:
             await msg.edit(content="The votes are in! Sadly, {} will not be unmuted... :(".format(user.mention))
@@ -244,7 +262,7 @@ class Moderation:
     @commands.group()
     async def room(self, ctx):
         if ctx.invoked_subcommand == None:
-            await ctx.send("you must use a subcommand :3")
+            await ctx.send("you must use a valid subcommand :3")
 
     @room.command()
     async def create(self, ctx, *users: discord.Member):
@@ -543,6 +561,70 @@ class Moderation:
         embed = discord.Embed(color=0xffff00, description="User **{}** has been unbanned".format(member.name))
         embed.set_footer(text="User Unban", icon_url=member.avatar_url)
         await channel.send(embed=embed)
+
+    @commands.command()
+    async def fchangenick(self, ctx, nick, user: discord.Member):
+        if not ctx.author.guild_permissions.manage_nicknames:
+            await ctx.send("Sorry! You must have the **Manage Nicknames** permission to use this command!")
+            return
+        await user.edit(nick=nick)
+        await ctx.send("Done!")
+
+    @commands.command()
+    async def fkick(self, ctx, user: discord.Member):
+        if not ctx.author.guild_permissions.kick_members:
+            await ctx.send("Sorry! You must have the **Kick Members** permission to use this command!")
+            return
+        await user.kick()
+        await ctx.send("Done!")
+
+    @commands.command()
+    async def fban(self, ctx, user: discord.Member):
+        if not ctx.author.guild_permissions.ban_members:
+            await ctx.send("Sorry! You must have the **Ban Members** permission to use this command!")
+            return
+        await user.ban()
+        await ctx.send("Done!")
+
+    @commands.command()
+    async def fmute(self, ctx, user: discord.Member):
+        if not ctx.author.guild_permissions.manage_messages:
+            await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
+            return
+        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        table = db["config"]
+        if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
+            role = discord.utils.get(ctx.guild.roles, name="muted")
+        else:
+            role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
+            return
+        mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        embed = discord.Embed(color=0xffff00, description="User **{}** has been muted".format(user.name))
+        embed.set_footer(text="User Mute", icon_url=user.avatar_url)
+        await mlchannel.send(embed=embed)
+        await user.add_roles(role)
+        await ctx.send("Done!")
+
+    @commands.command()
+    async def funmute(self, ctx, user: discord.Member):
+        if not ctx.author.guild_permissions.manage_messages:
+            await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
+            return
+        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        table = db["config"]
+        if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
+            role = discord.utils.get(ctx.guild.roles, name="muted")
+        else:
+            role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
+            return
+        mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        embed = discord.Embed(color=0xffff00, description="User **{}** has been unmuted".format(user.name))
+        embed.set_footer(text="User Unmute", icon_url=user.avatar_url)
+        await mlchannel.send(embed=embed)
+        await user.remove_roles(role)
+        await ctx.send("Done!")
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
