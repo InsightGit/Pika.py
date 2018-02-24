@@ -12,8 +12,13 @@ class Moderation:
     @commands.command()
     async def report(self, ctx, userToReport: discord.Member, reason: str):
         """Reports a user to the moderators."""
+        config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         for user in ctx.guild.members:
-            if discord.utils.get(user.roles, name="Mod"):
+            if config.find_one(key="report_role") is None:
+                role = discord.utils.get(user.roles, name="Mod")
+            else:
+                role = discord.utils.get(user.roles, name=config.find_one(key="report_role")["value"])
+            if role:
                 message = """**User Reported!**\n**Reportee**: {}\n**User Reported**: {}\n**Reason**: {}\n**Channel**: {}""".format(ctx.author.display_name, userToReport.display_name, reason, ctx.channel.name)
                 await user.send(message)
         embed = discord.Embed(color=0xffff00, description="User reported! :spy:")
@@ -21,6 +26,7 @@ class Moderation:
 
     @commands.command()
     async def changenick(self, ctx, nick, user: discord.Member = None):
+        """Starts a vote to change a users nickname"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         if len(nick) > 32:
             embed = discord.Embed(color=0xffff00, description="Sorry, you reached the character limit on nicknames!")
@@ -32,7 +38,7 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl1_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "1m":
+        if config.find_one(key="lvl1_vote_time") is None:
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
@@ -64,6 +70,7 @@ class Moderation:
 
     @commands.command()
     async def kick(self, ctx, user: discord.Member):
+        """Starts a vote to kick a person"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         if user == None:
             user = ctx.author
@@ -71,7 +78,7 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl2_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "5m":
+        if config.find_one(key="lvl2_vote_time") is None:
             sec = 60
             m, s = divmod(300, 60)
             h, m = divmod(m, 60)
@@ -97,12 +104,13 @@ class Moderation:
 
     @commands.command()
     async def topic(self, ctx, *, topic):
+        """Starts a vote to change this channel's topic"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl1_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "1m":
+        if config.find_one(key="lvl1_vote_time") is None:
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
@@ -131,12 +139,13 @@ class Moderation:
 
     @commands.command()
     async def ban(self, ctx, user: discord.Member, days: int = None):
+        """Start a vote to ban a user"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl2_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "5m":
+        if config.find_one(key="lvl2_vote_time") is None:
             sec = 60
             m, s = divmod(300, 60)
             h, m = divmod(m, 60)
@@ -168,13 +177,14 @@ class Moderation:
 
     @commands.command()
     async def mute(self, ctx, user: discord.Member, minutes: int = None):
+        """Start a vote to mute a user"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if table.find_one(key="lvl1_vote_time") is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+        if table.find_one(key="lvl1_vote_time") is None:
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
@@ -195,12 +205,11 @@ class Moderation:
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
             await msg.edit(content="The votes are in! {} has been muted".format(user.mention))
-            if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
-                return
-            mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
-            embed = discord.Embed(color=0xffff00, description="User **{}** has been muted".format(user.name))
-            embed.set_footer(text="User Mute", icon_url=user.avatar_url)
-            await mlchannel.send(embed=embed)
+            if table.find_one(key="modlog_channel") is not None or table.find_one(key="modlog_channel")["value"] != "off":
+                mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+                embed = discord.Embed(color=0xffff00, description="User **{}** has been muted".format(user.name))
+                embed.set_footer(text="User Mute", icon_url=user.avatar_url)
+                await mlchannel.send(embed=embed)
             if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
                 role = discord.utils.get(ctx.guild.roles, name="muted")
             else:
@@ -219,13 +228,14 @@ class Moderation:
 
     @commands.command()
     async def unmute(self, ctx, user: discord.Member):
+        """Start a vote to unmute a user"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if table.find_one(key="lvl1_vote_time") is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+        if table.find_one(key="lvl1_vote_time") is None:
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
@@ -243,16 +253,15 @@ class Moderation:
         no = discord.utils.get(msg.reactions, emoji='👎')
         if yes.count > no.count:
             await msg.edit(content="The votes are in! {} has been unmuted".format(user.mention))
-            if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
+            if table.find_one(key="muted_role") is None:
                 role = discord.utils.get(ctx.guild.roles, name="muted")
             else:
                 role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
-            if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
-                return
-            mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
-            embed = discord.Embed(color=0xffff00, description="User **{}** has been unmuted".format(user.name))
-            embed.set_footer(text="User Unmute", icon_url=user.avatar_url)
-            await mlchannel.send(embed=embed)
+            if table.find_one(key="modlog_channel") is not None or table.find_one(key="modlog_channel")["value"] != "off":
+                mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+                embed = discord.Embed(color=0xffff00, description="User **{}** has been unmuted".format(user.name))
+                embed.set_footer(text="User Unmute", icon_url=user.avatar_url)
+                await mlchannel.send(embed=embed)
             await user.remove_roles(role)
         elif no.count > yes.count:
             await msg.edit(content="The votes are in! Sadly, {} will not be unmuted... :(".format(user.mention))
@@ -266,6 +275,7 @@ class Moderation:
 
     @room.command()
     async def create(self, ctx, *users: discord.Member):
+        """Creates a room with the users that are specified"""
         name = "room_{}".format(random.randint(1000, 9999))
         role = await ctx.guild.create_role(name=name)
         if discord.utils.get(ctx.guild.channels, name="Rooms"):
@@ -294,6 +304,7 @@ class Moderation:
 
     @room.command()
     async def add(self, ctx, *, username):
+        """Adds a user to the room"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
@@ -312,6 +323,7 @@ class Moderation:
 
     @room.command()
     async def remove(self, ctx, user: discord.Member):
+        """Removes a user from the room"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
@@ -330,6 +342,7 @@ class Moderation:
 
     @room.command(aliases=["delet"])
     async def delete(self, ctx):
+        """Deletes a room"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
@@ -346,6 +359,7 @@ class Moderation:
 
     @room.command()
     async def rename(self, ctx, name):
+        """Renames the room"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
@@ -360,6 +374,7 @@ class Moderation:
 
     @room.command(name="topic")
     async def _topic(self, ctx, *, topic):
+        """Changes the room topic"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
@@ -374,6 +389,7 @@ class Moderation:
 
     @room.command()
     async def leave(self, ctx):
+        """Leaves a room"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
@@ -389,6 +405,7 @@ class Moderation:
 
     @room.command()
     async def members(self, ctx):
+        """Lists a room's members"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
@@ -406,14 +423,16 @@ class Moderation:
 
     @commands.group()
     async def config(self, ctx):
+        """Lists all the keys in the configuration"""
         if not ctx.author.guild_permissions.manage_guild:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         elif ctx.invoked_subcommand is None:
-            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"off\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"off\"```")
+            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"off\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"off\"\n\nreport_role     Changes what role users need to have to recive reports. Defaults to \"Mod\"```")
 
     @config.command()
     async def set(self, ctx, key, value):
+        """Sets a value in the config"""
         if not ctx.author.guild_permissions.manage_guild:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
@@ -450,12 +469,19 @@ class Moderation:
                 else:
                     table.insert(dict(key="modlog_channel", value=value))
                 await ctx.send("Config updated!")
+            elif key.lower() == "report_role":
+                if table.find_one(key="report_rolel"):
+                    table.update(dict(key="report_role", value=value), ["key"])
+                else:
+                    table.insert(dict(key="report_role", value=value))
+                await ctx.send("Config updated!")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
 
     @config.command()
     async def get(self, ctx, key):
+        """Gets whatever value in the config"""
         if not ctx.author.guild_permissions.manage_guild:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
@@ -487,12 +513,18 @@ class Moderation:
                     await ctx.send("``modlog_channel``'s current value is: ``{}``".format(table.find_one(key="modlog_channel")["value"]))
                 else:
                     await ctx.send("``modlog_channel``'s current value is: ``off``")
+            elif key.lower() == "report_role":
+                if table.find_one(key="report_role"):
+                    await ctx.send("``report_role``'s current value is: ``{}``".format(table.find_one(key="report_role")["value"]))
+                else:
+                    await ctx.send("``report_role``'s current value is: ``Mod``")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
 
     @config.command()
     async def reset(self, ctx, key):
+        """Resets a value in the config"""
         if not ctx.author.guild_permissions.manage_guild:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
@@ -564,6 +596,7 @@ class Moderation:
 
     @commands.command()
     async def fchangenick(self, ctx, nick, user: discord.Member):
+        """Force changes a user's nickname"""
         if not ctx.author.guild_permissions.manage_nicknames:
             await ctx.send("Sorry! You must have the **Manage Nicknames** permission to use this command!")
             return
@@ -576,6 +609,7 @@ class Moderation:
 
     @commands.command()
     async def fkick(self, ctx, user: discord.Member):
+        """Force kicks a user"""
         if not ctx.author.guild_permissions.kick_members:
             await ctx.send("Sorry! You must have the **Kick Members** permission to use this command!")
             return
@@ -584,6 +618,7 @@ class Moderation:
 
     @commands.command()
     async def fban(self, ctx, user: discord.Member):
+        """Force bans a user"""
         if not ctx.author.guild_permissions.ban_members:
             await ctx.send("Sorry! You must have the **Ban Members** permission to use this command!")
             return
@@ -592,6 +627,7 @@ class Moderation:
 
     @commands.command()
     async def fmute(self, ctx, user: discord.Member):
+        """Force mutes a user"""
         if not ctx.author.guild_permissions.manage_messages:
             await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
             return
@@ -601,32 +637,31 @@ class Moderation:
             role = discord.utils.get(ctx.guild.roles, name="muted")
         else:
             role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
-        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
-            return
-        mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
-        embed = discord.Embed(color=0xffff00, description="User **{}** has been muted".format(user.name))
-        embed.set_footer(text="User Mute", icon_url=user.avatar_url)
-        await mlchannel.send(embed=embed)
+        if table.find_one(key="modlog_channel") is not None or table.find_one(key="modlog_channel")["value"] != "off":
+            mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+            embed = discord.Embed(color=0xffff00, description="User **{}** has been muted".format(user.name))
+            embed.set_footer(text="User Mute", icon_url=user.avatar_url)
+            await mlchannel.send(embed=embed)
         await user.add_roles(role)
         await ctx.send("Done!")
 
     @commands.command()
     async def funmute(self, ctx, user: discord.Member):
+        """Force unmutes a user"""
         if not ctx.author.guild_permissions.manage_messages:
             await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
             return
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
-        if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
+        if table.find_one(key="muted_role") is None:
             role = discord.utils.get(ctx.guild.roles, name="muted")
         else:
             role = discord.utils.get(ctx.guild.roles, name=table.find_one(key="muted_role")["value"])
-        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
-            return
-        mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
-        embed = discord.Embed(color=0xffff00, description="User **{}** has been unmuted".format(user.name))
-        embed.set_footer(text="User Unmute", icon_url=user.avatar_url)
-        await mlchannel.send(embed=embed)
+        if table.find_one(key="modlog_channel") is not None or table.find_one(key="modlog_channel")["value"] != "off":
+            mlchannel = discord.utils.get(ctx.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+            embed = discord.Embed(color=0xffff00, description="User **{}** has been unmuted".format(user.name))
+            embed.set_footer(text="User Unmute", icon_url=user.avatar_url)
+            await mlchannel.send(embed=embed)
         await user.remove_roles(role)
         await ctx.send("Done!")
 
