@@ -12,6 +12,8 @@ class Starboard:
         table = db["starboard"]
         config = db["config"]
         if emoji.name == '⭐':
+            if config.find_one(key="starboard_channel") == "off":
+                return
             if not table.find_one(message=message.id):
                 if config.find_one(key="starboard_channel") is None or config.find_one(key="starboard_channel")["value"] == "starboard":
                     channel = discord.utils.get(message.guild.channels, name="starboard")
@@ -48,6 +50,8 @@ class Starboard:
         table = db["starboard"]
         config = db["config"]
         if emoji.name == '⭐':
+            if config.find_one(key="starboard_channel") == "off":
+                return
             if table.find_one(message=message.id):
                 data = table.find_one(message=message.id)
                 if config.find_one(key="starboard_channel") is None or config.find_one(key="starboard_channel")["value"] == "starboard":
