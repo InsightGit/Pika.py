@@ -428,7 +428,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         elif ctx.invoked_subcommand is None:
-            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"off\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"off\"\n\nreport_role     Changes what role users need to have to recive reports. Defaults to \"Mod\"```")
+            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"off\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands, in the format of \"XdXhXmXs\" Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"off\"\n\nreport_role     Changes what role users need to have to recive reports. Defaults to \"Mod\"```")
 
     @config.command()
     async def set(self, ctx, key, value):
