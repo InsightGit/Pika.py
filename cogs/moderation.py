@@ -490,10 +490,7 @@ class Moderation:
             table = db["config"]
             if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
                 return
-            if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
-                channel = discord.utils.get(after.guild.channels, name="modlog")
-            else:
-                channel = discord.utils.get(after.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+            channel = discord.utils.get(after.guild.channels, name=table.find_one(key="modlog_channel")["value"])
             if before.nick is not None:
                 if after.nick is not None:
                     embed = discord.Embed(color=0xffff00, description="**{}**'s nickname was changed to **{}**".format(before.nick, after.nick))
@@ -512,10 +509,7 @@ class Moderation:
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
-        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
-            channel = discord.utils.get(member.guild.channels, name="modlog")
-        else:
-            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
         embed = discord.Embed(color=0xffff00, description="User **{}** has joined".format(member.name))
         embed.set_footer(text="User Join", icon_url=member.avatar_url)
         await channel.send(embed=embed)
@@ -525,10 +519,7 @@ class Moderation:
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
-        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
-            channel = discord.utils.get(member.guild.channels, name="modlog")
-        else:
-            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
         embed = discord.Embed(color=0xffff00, description="User **{}** has left".format(member.name))
         embed.set_footer(text="User Leave", icon_url=member.avatar_url)
         await channel.send(embed=embed)
@@ -538,10 +529,7 @@ class Moderation:
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
-        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
-            channel = discord.utils.get(member.guild.channels, name="modlog")
-        else:
-            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
         embed = discord.Embed(color=0xffff00, description="User **{}** has been banned".format(member.name))
         embed.set_footer(text="User Ban", icon_url=member.avatar_url)
         await channel.send(embed=embed)
@@ -551,10 +539,7 @@ class Moderation:
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
-        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
-            channel = discord.utils.get(member.guild.channels, name="modlog")
-        else:
-            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
         embed = discord.Embed(color=0xffff00, description="User **{}** has been unbanned".format(member.name))
         embed.set_footer(text="User Unban", icon_url=member.avatar_url)
         await channel.send(embed=embed)
