@@ -32,12 +32,12 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl1_vote_time")["value"] is None or config.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+        if config.find_one(key="lvl1_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "1m":
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
         else:
-            sec = config.find_one(key="lvl1_vote_time")["value"]
+            sec = int(config.find_one(key="lvl1_vote_time")["value"])
             m, s = divmod(int(config.find_one(key="lvl1_vote_time")["value"]), 60)
             h, m = divmod(m, 60)
         if user == ctx.author:
@@ -71,12 +71,12 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl2_vote_time")["value"] is None or config.find_one(key="lvl2_vote_time")["value"] == "5 minutes":
+        if config.find_one(key="lvl2_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "5m":
             sec = 60
-            m, s = divmod(60, 60)
+            m, s = divmod(300, 60)
             h, m = divmod(m, 60)
         else:
-            sec = config.find_one(key="lvl2_vote_time")["value"]
+            sec = int(config.find_one(key="lvl2_vote_time")["value"])
             m, s = divmod(int(config.find_one(key="lvl2_vote_time")["value"]), 60)
             h, m = divmod(m, 60)
         msg = await ctx.send("{} would like to kick **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, h, m, s))
@@ -91,7 +91,7 @@ class Moderation:
             await msg.edit(content="The votes are in! {} has been kicked".format(user.mention))
             await user.kick()
         elif no.count > yes.count:
-            await msg.edit(content="The votes are in! Sadly, {}'s will not be kicked... :(".format(user.mention))
+            await msg.edit(content="The votes are in! Sadly, {} will not be kicked... :(".format(user.mention))
         elif yes.count == no.count:
                 await msg.edit(content="We got a tie! Sorry {}, not happening today!".format(ctx.author))
 
@@ -102,12 +102,12 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl1_vote_time")["value"] is None or config.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+        if config.find_one(key="lvl1_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "1m":
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
         else:
-            sec = config.find_one(key="lvl1_vote_time")["value"]
+            sec = int(config.find_one(key="lvl1_vote_time")["value"])
             m, s = divmod(int(config.find_one(key="lvl1_vote_time")["value"]), 60)
             h, m = divmod(m, 60)
         msg = await ctx.send("{} would like to change this channel's topic to **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, topic, h, m, s))
@@ -136,12 +136,12 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if config.find_one(key="lvl2_vote_time")["value"] is None or config.find_one(key="lvl2_vote_time")["value"] == "5 minutes":
+        if config.find_one(key="lvl2_vote_time") is None or config.find_one(key="lvl1_vote_time")["value"] == "5m":
             sec = 60
-            m, s = divmod(60, 60)
+            m, s = divmod(300, 60)
             h, m = divmod(m, 60)
         else:
-            sec = config.find_one(key="lvl2_vote_time")["value"]
+            sec = int(config.find_one(key="lvl2_vote_time")["value"])
             m, s = divmod(int(config.find_one(key="lvl2_vote_time")["value"]), 60)
             h, m = divmod(m, 60)
         if days == None:
@@ -174,12 +174,12 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if table.find_one(key="lvl1_vote_time")["value"] is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+        if table.find_one(key="lvl1_vote_time") is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
         else:
-            sec = table.find_one(key="lvl1_vote_time")["value"]
+            sec = int(table.find_one(key="lvl1_vote_time")["value"])
             m, s = divmod(int(table.find_one(key="lvl1_vote_time")["value"]), 60)
             h, m = divmod(m, 60)
         if minutes == None:
@@ -216,12 +216,12 @@ class Moderation:
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
-        if table.find_one(key="lvl1_vote_time")["value"] is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
+        if table.find_one(key="lvl1_vote_time") is None or table.find_one(key="lvl1_vote_time")["value"] == "1 minute":
             sec = 60
             m, s = divmod(60, 60)
             h, m = divmod(m, 60)
         else:
-            sec = table.find_one(key="lvl1_vote_time")["value"]
+            sec = int(table.find_one(key="lvl1_vote_time")["value"])
             m, s = divmod(int(table.find_one(key="lvl1_vote_time")["value"]), 60)
             h, m = divmod(m, 60)
         msg = await ctx.send("{} would like to unmute **{}**! Let's vote, shall we? You have **{} hours, {} minutes, and {} seconds** to vote.".format(ctx.author.mention, user.mention, h, m, s))
@@ -392,7 +392,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         elif ctx.invoked_subcommand is None:
-            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Defaults to \"starboard\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1 minute\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"10 minutes\"```")
+            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"starboard\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands. Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"modlog\"```")
 
     @config.command()
     async def set(self, ctx, key, value):
@@ -426,6 +426,12 @@ class Moderation:
                 else:
                     table.insert(dict(key="lvl2_vote_time", value=pytimeparse.parse(value)))
                 await ctx.send("Config updated!")
+            elif key.lower() == "modlog_channel":
+                if table.find_one(key="modlog_channel"):
+                    table.update(dict(key="modlog_channel", value=value), ["key"])
+                else:
+                    table.insert(dict(key="modlog_channel", value=value))
+                await ctx.send("Config updated!")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
@@ -452,15 +458,93 @@ class Moderation:
                 if table.find_one(key="lvl1_vote_time"):
                     await ctx.send("``lvl1_vote_time``'s current value is: ``{}``".format(table.find_one(key="lvl1_vote_time")["value"]))
                 else:
-                    await ctx.send("``lvl1_vote_time``'s current value is: ``1 minute``")
+                    await ctx.send("``lvl1_vote_time``'s current value is: ``1m``")
             elif key.lower() == "lvl2_vote_time":
                 if table.find_one(key="lvl2_vote_time"):
                     await ctx.send("``lvl2_vote_time``'s current value is: ``{}``".format(table.find_one(key="lvl2_vote_time")["value"]))
                 else:
-                    await ctx.send("``lvl2_vote_time``'s current value is: ``10 minutes``")
+                    await ctx.send("``lvl2_vote_time``'s current value is: ``5m``")
+            elif key.lower() == "modlog_channel":
+                if table.find_one(key="modlog_channel"):
+                    await ctx.send("``modlog_channel``'s current value is: ``{}``".format(table.find_one(key="modlog_channel")["value"]))
+                else:
+                    await ctx.send("``modlog_channel``'s current value is: ``modlog``")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
+
+    async def on_member_update(self, before, after):
+        if before.nick != after.nick:
+            db = dataset.connect("sqlite:///{}.db".format(after.guild.id))
+            table = db["config"]
+            if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
+                channel = discord.utils.get(after.guild.channels, name="modlog")
+            else:
+                channel = discord.utils.get(after.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+            if before.nick is not None:
+                if after.nick is not None:
+                    embed = discord.Embed(color=0xffff00, description="**{}**'s nickname was changed to **{}**".format(before.nick, after.nick))
+                else:
+                    embed = discord.Embed(color=0xffff00, description="**{}**'s nickname was changed to **{}**".format(before.nick, after.name))
+            else:
+                if after.nick is not None:
+                    embed = discord.Embed(color=0xffff00, description="**{}**'s nickname was changed to **{}**".format(before.name, after.nick))
+                else:
+                    embed = discord.Embed(color=0xffff00, description="**{}**'s nickname was changed to **{}**".format(before.nick, after.name))
+            embed.set_footer(text="Nickname Change", icon_url=after.avatar_url)
+            await channel.send(embed=embed)
+
+    async def on_member_join(self, member):
+        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        table = db["config"]
+        if table.find_one(key="modlog_channel")["value"] == "off":
+            return
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
+            channel = discord.utils.get(member.guild.channels, name="modlog")
+        else:
+            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        embed = discord.Embed(color=0xffff00, description="User **{}** has joined".format(member.name))
+        embed.set_footer(text="User Join", icon_url=member.avatar_url)
+        await channel.send(embed=embed)
+
+    async def on_member_remove(self, member):
+        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        table = db["config"]
+        if table.find_one(key="modlog_channel")["value"] == "off":
+            return
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
+            channel = discord.utils.get(member.guild.channels, name="modlog")
+        else:
+            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        embed = discord.Embed(color=0xffff00, description="User **{}** has left".format(member.name))
+        embed.set_footer(text="User Leave", icon_url=member.avatar_url)
+        await channel.send(embed=embed)
+
+    async def on_member_ban(self, guild, member):
+        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        table = db["config"]
+        if table.find_one(key="modlog_channel")["value"] == "off":
+            return
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
+            channel = discord.utils.get(member.guild.channels, name="modlog")
+        else:
+            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        embed = discord.Embed(color=0xffff00, description="User **{}** has been banned".format(member.name))
+        embed.set_footer(text="User Ban", icon_url=member.avatar_url)
+        await channel.send(embed=embed)
+
+    async def on_member_unban(self, guild, member):
+        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        table = db["config"]
+        if table.find_one(key="modlog_channel")["value"] == "off":
+            return
+        if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
+            channel = discord.utils.get(member.guild.channels, name="modlog")
+        else:
+            channel = discord.utils.get(member.guild.channels, name=table.find_one(key="modlog_channel")["value"])
+        embed = discord.Embed(color=0xffff00, description="User **{}** has been unbanned".format(member.name))
+        embed.set_footer(text="User Unban", icon_url=member.avatar_url)
+        await channel.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
