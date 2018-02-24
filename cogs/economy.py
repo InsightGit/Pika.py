@@ -8,7 +8,7 @@ class Economy:
         self.bot = bot
 
     async def on_message(self, message):
-        db = dataset.connect("sqlite:///{}.db".format(message.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(message.guild.id))
         for user in message.guild.members:
             if db["xp"].find_one(user=user.id):
                 continue
@@ -34,7 +34,7 @@ class Economy:
     @commands.command()
     async def xp(self, ctx, user: discord.Member = None):
         """Check a users XP!"""
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         if user == None:
             user = ctx.author
         elif user == self.bot.user:
@@ -56,7 +56,7 @@ class Economy:
     @commands.command()
     async def rr(self, ctx, bet: int):
         """Russian Roulette! Bet some XP!"""
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["xp"]
         data = table.find_one(user=ctx.author.id)
         if bet < 10:
@@ -88,14 +88,14 @@ class Economy:
     @commands.command()
     @commands.is_owner()
     async def setxp(self, ctx, user: discord.Member, xp):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["xp"]
         table.update(dict(user=user.id, xp=xp), ["user"])
         await ctx.send("done")
 
     @commands.command()
     async def leaderboard(self, ctx):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["xp"]
         lb = sorted(table.all(), key=lambda x: x["xp"], reverse=True)
         lebo = []
