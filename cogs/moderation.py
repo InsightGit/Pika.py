@@ -567,6 +567,10 @@ class Moderation:
         if not ctx.author.guild_permissions.manage_nicknames:
             await ctx.send("Sorry! You must have the **Manage Nicknames** permission to use this command!")
             return
+        if len(nick) > 32:
+            embed = discord.Embed(color=0xffff00, description="Sorry, you reached the character limit on nicknames!")
+            await ctx.send(embed=embed)
+            return
         await user.edit(nick=nick)
         await ctx.send("Done!")
 
@@ -611,6 +615,7 @@ class Moderation:
         if not ctx.author.guild_permissions.manage_messages:
             await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
             return
+        if
         db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
         table = db["config"]
         if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
