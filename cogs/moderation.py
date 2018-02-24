@@ -21,7 +21,7 @@ class Moderation:
 
     @commands.command()
     async def changenick(self, ctx, nick, user: discord.Member = None):
-        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
+        config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         if len(nick) > 32:
             embed = discord.Embed(color=0xffff00, description="Sorry, you reached the character limit on nicknames!")
             await ctx.send(embed=embed)
@@ -64,7 +64,7 @@ class Moderation:
 
     @commands.command()
     async def kick(self, ctx, user: discord.Member):
-        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
+        config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         if user == None:
             user = ctx.author
         o = []
@@ -97,7 +97,7 @@ class Moderation:
 
     @commands.command()
     async def topic(self, ctx, *, topic):
-        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
+        config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
@@ -131,7 +131,7 @@ class Moderation:
 
     @commands.command()
     async def ban(self, ctx, user: discord.Member, days: int = None):
-        config = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))["config"]
+        config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         o = []
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
@@ -168,7 +168,7 @@ class Moderation:
 
     @commands.command()
     async def mute(self, ctx, user: discord.Member, minutes: int = None):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
         o = []
         for m in ctx.guild.members:
@@ -219,7 +219,7 @@ class Moderation:
 
     @commands.command()
     async def unmute(self, ctx, user: discord.Member):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
         o = []
         for m in ctx.guild.members:
@@ -284,7 +284,7 @@ class Moderation:
         await ctx.author.add_roles(role)
         for m in users:
             await m.add_roles(role)
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         table.insert(dict(channel=channel.id, role=role.id, owner=ctx.author.id))
         await ctx.send("creat0red")
@@ -294,7 +294,7 @@ class Moderation:
 
     @room.command()
     async def add(self, ctx, *, username):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
             await ctx.send("use this in a room please")
@@ -312,7 +312,7 @@ class Moderation:
 
     @room.command()
     async def remove(self, ctx, user: discord.Member):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
             await ctx.send("use this in a room please")
@@ -330,7 +330,7 @@ class Moderation:
 
     @room.command(aliases=["delet"])
     async def delete(self, ctx):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
             await ctx.send("use this in a room please")
@@ -346,7 +346,7 @@ class Moderation:
 
     @room.command()
     async def rename(self, ctx, name):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
             await ctx.send("use this in a room please")
@@ -360,7 +360,7 @@ class Moderation:
 
     @room.command(name="topic")
     async def _topic(self, ctx, *, topic):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
             await ctx.send("use this in a room please")
@@ -374,7 +374,7 @@ class Moderation:
 
     @room.command()
     async def leave(self, ctx):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
             await ctx.send("use this in a room please")
@@ -389,7 +389,7 @@ class Moderation:
 
     @room.command()
     async def members(self, ctx):
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         if not table.find_one(channel=ctx.channel.id):
             await ctx.send("use this in a room please")
@@ -418,7 +418,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         else:
-            db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+            db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
             table = db["config"]
             if key.lower() == "muted_role":
                 if table.find_one(key="muted_role"):
@@ -460,7 +460,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         else:
-            db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+            db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
             table = db["config"]
             if key.lower() == "muted_role":
                 if table.find_one(key="muted_role"):
@@ -497,14 +497,14 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         else:
-            db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+            db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
             table = db["config"]
             table.delete(key=key)
             await ctx.send("Config updated!")
 
     async def on_member_update(self, before, after):
         if before.nick != after.nick:
-            db = dataset.connect("sqlite:///{}.db".format(after.guild.id))
+            db = dataset.connect("sqlite:///servers/{}.db".format(after.guild.id))
             table = db["config"]
             if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
                 return
@@ -523,7 +523,7 @@ class Moderation:
             await channel.send(embed=embed)
 
     async def on_member_join(self, member):
-        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(member.guild.id))
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
@@ -533,7 +533,7 @@ class Moderation:
         await channel.send(embed=embed)
 
     async def on_member_remove(self, member):
-        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(member.guild.id))
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
@@ -543,7 +543,7 @@ class Moderation:
         await channel.send(embed=embed)
 
     async def on_member_ban(self, guild, member):
-        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(member.guild.id))
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
@@ -553,7 +553,7 @@ class Moderation:
         await channel.send(embed=embed)
 
     async def on_member_unban(self, guild, member):
-        db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(member.guild.id))
         table = db["config"]
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "off":
             return
@@ -595,7 +595,7 @@ class Moderation:
         if not ctx.author.guild_permissions.manage_messages:
             await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
             return
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
         if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
             role = discord.utils.get(ctx.guild.roles, name="muted")
@@ -615,7 +615,7 @@ class Moderation:
         if not ctx.author.guild_permissions.manage_messages:
             await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
             return
-        db = dataset.connect("sqlite:///{}.db".format(ctx.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
         if table.find_one(key="muted_role")["value"] == "muted" or table.find_one(key="muted_role") == None:
             role = discord.utils.get(ctx.guild.roles, name="muted")
