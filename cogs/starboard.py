@@ -12,7 +12,7 @@ class Starboard:
         table = db["starboard"]
         config = db["config"]
         if emoji.name == '⭐':
-            if config.find_one(key="starboard_channel")["value"] == "off":
+            if config.find_one(key="starboard_channel") is not None and config.find_one(key="starboard_channel")["value"] == "off":
                 return
             if not table.find_one(message=message.id):
                 if config.find_one(key="starboard_channel") is None or config.find_one(key="starboard_channel")["value"] == "starboard":
@@ -50,7 +50,7 @@ class Starboard:
         table = db["starboard"]
         config = db["config"]
         if emoji.name == '⭐':
-            if config.find_one(key="starboard_channel")["value"] == "off":
+            if config.find_one(key="starboard_channel") is not None and config.find_one(key="starboard_channel")["value"] == "off":
                 return
             if table.find_one(message=message.id):
                 data = table.find_one(message=message.id)
@@ -73,7 +73,7 @@ class Starboard:
                         embed.set_image(url=message.attachments[0].url)
                     await msg.edit(embed=embed)
                 else:
-                    embed = discord.Embed(title="Message by {} starred".format(reaction.message.author.name), description="{}".format(message.content), color=0xffff00)
+                    embed = discord.Embed(title="Message by {} starred".format(message.author.name), description="{}".format(message.content), color=0xffff00)
                     embed.set_footer(text="This message has received {} ⭐'s".format(data["stars"]))
                     if message.attachments:
                         embed.set_image(url=message.attachments[0].url)
