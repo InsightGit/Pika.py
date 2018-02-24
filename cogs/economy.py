@@ -88,6 +88,7 @@ class Economy:
     @commands.command()
     @commands.is_owner()
     async def setxp(self, ctx, user: discord.Member, xp):
+        """Bot owner only. Sets a users XP"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["xp"]
         table.update(dict(user=user.id, xp=xp), ["user"])
@@ -95,6 +96,7 @@ class Economy:
 
     @commands.command()
     async def leaderboard(self, ctx):
+        """Shows the XP leaderboard for this server"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["xp"]
         lb = sorted(table.all(), key=lambda x: x["xp"], reverse=True)
