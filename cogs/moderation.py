@@ -499,7 +499,7 @@ class Moderation:
     async def on_member_join(self, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
@@ -512,7 +512,7 @@ class Moderation:
     async def on_member_remove(self, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
@@ -525,7 +525,7 @@ class Moderation:
     async def on_member_ban(self, guild, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
@@ -538,7 +538,7 @@ class Moderation:
     async def on_member_unban(self, guild, member):
         db = dataset.connect("sqlite:///{}.db".format(member.guild.id))
         table = db["config"]
-        if table.find_one(key="modlog_channel")["value"] == "off":
+        if table.find_one(key="modlog_channel") is not None and table.find_one(key="modlog_channel")["value"] == "off":
             return
         if table.find_one(key="modlog_channel") is None or table.find_one(key="modlog_channel")["value"] == "modlog":
             channel = discord.utils.get(member.guild.channels, name="modlog")
