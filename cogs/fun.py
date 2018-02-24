@@ -5,6 +5,7 @@ import asyncio
 import random
 import requests
 from pyshorteners import Shortener
+import ast
 
 class Fun:
     def __init__(self, bot):
@@ -100,6 +101,10 @@ class Fun:
         resp = requests.get("https://random.dog/woof.json")
         data = resp.json()
         await ctx.send(data["url"])
+
+    @commands.command()
+    async def avatar(self, ctx, user: discord.Member):
+        await ctx.send(user.avatar_url)
 
 def setup(bot):
     bot.add_cog(Fun(bot))
