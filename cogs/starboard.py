@@ -12,7 +12,7 @@ class Starboard:
         table = db["starboard"]
         config = db["config"]
         if emoji.name == '⭐':
-            if config.find_one(key="starboard_channel") == "off":
+            if config.find_one(key="starboard_channel")["value"] == "off":
                 return
             if not table.find_one(message=message.id):
                 if config.find_one(key="starboard_channel") is None or config.find_one(key="starboard_channel")["value"] == "starboard":
@@ -50,7 +50,7 @@ class Starboard:
         table = db["starboard"]
         config = db["config"]
         if emoji.name == '⭐':
-            if config.find_one(key="starboard_channel") == "off":
+            if config.find_one(key="starboard_channel")["value"] == "off":
                 return
             if table.find_one(message=message.id):
                 data = table.find_one(message=message.id)
