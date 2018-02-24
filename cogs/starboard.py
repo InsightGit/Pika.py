@@ -6,7 +6,7 @@ class Starboard:
         self.bot = bot
 
     async def on_reaction_add(self, reaction, member):
-        db = dataset.connect("sqlite:///{}.db".format(reaction.message.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(reaction.message.guild.id))
         table = db["starboard"]
         config = db["config"]
         if reaction.emoji == '⭐':
@@ -39,7 +39,7 @@ class Starboard:
                 await msg.edit(embed=embed)
 
     async def on_reaction_remove(self, reaction, member):
-        db = dataset.connect("sqlite:///{}.db".format(reaction.message.guild.id))
+        db = dataset.connect("sqlite:///servers/{}.db".format(reaction.message.guild.id))
         table = db["starboard"]
         config = db["config"]
         if reaction.emoji == '⭐':
