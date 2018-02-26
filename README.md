@@ -1,6 +1,10 @@
 # Pika.py
 🤖 A Discord Bot for the power-user in all of us!
 
+<a href="https://discordbots.org/bot/412042272268615680">
+  <img src="https://discordbots.org/api/widget/412042272268615680.svg" />
+</a>
+
 # Features
 * An awesome Moderation system, including an unique voting system for nickname changes, kicks, bans, and mutes!
 * Many fun commands!
