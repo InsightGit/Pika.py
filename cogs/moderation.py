@@ -28,6 +28,9 @@ class Moderation:
     async def changenick(self, ctx, nick, user: discord.Member = None):
         """Starts a vote to change a users nickname"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
+        if config.find_one(key="vote_cmd_status") is None or config.find_one(key="vote_cmd_status")["value"] == "off":
+            await ctx.send("Sorry! The server owner has disabled the vote commands! Maybe ask them nicely to enable them?")
+            return
         if len(nick) > 32:
             embed = discord.Embed(color=0xffff00, description="Sorry, you reached the character limit on nicknames!")
             await ctx.send(embed=embed)
@@ -72,6 +75,9 @@ class Moderation:
     async def kick(self, ctx, user: discord.Member):
         """Starts a vote to kick a person"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
+        if config.find_one(key="vote_cmd_status") is None or config.find_one(key="vote_cmd_status")["value"] == "off":
+            await ctx.send("Sorry! The server owner has disabled the vote commands! Maybe ask them nicely to enable them?")
+            return
         if user == None:
             user = ctx.author
         o = []
@@ -107,6 +113,9 @@ class Moderation:
         """Starts a vote to change this channel's topic"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         o = []
+        if config.find_one(key="vote_cmd_status") is None or config.find_one(key="vote_cmd_status")["value"] == "off":
+            await ctx.send("Sorry! The server owner has disabled the vote commands! Maybe ask them nicely to enable them?")
+            return
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
@@ -142,6 +151,9 @@ class Moderation:
         """Start a vote to ban a user"""
         config = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))["config"]
         o = []
+        if config.find_one(key="vote_cmd_status") is None or config.find_one(key="vote_cmd_status")["value"] == "off":
+            await ctx.send("Sorry! The server owner has disabled the vote commands! Maybe ask them nicely to enable them?")
+            return
         for m in ctx.guild.members:
             if m.status == discord.Status.online:
                 o.append(m)
@@ -180,10 +192,9 @@ class Moderation:
         """Start a vote to mute a user"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
-        o = []
-        for m in ctx.guild.members:
-            if m.status == discord.Status.online:
-                o.append(m)
+        if table.find_one(key="vote_cmd_status") is None or table.find_one(key="vote_cmd_status")["value"] == "off":
+            await ctx.send("Sorry! The server owner has disabled the vote commands! Maybe ask them nicely to enable them?")
+            return
         if table.find_one(key="lvl1_vote_time") is None:
             sec = 60
             m, s = divmod(60, 60)
@@ -231,10 +242,9 @@ class Moderation:
         """Start a vote to unmute a user"""
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["config"]
-        o = []
-        for m in ctx.guild.members:
-            if m.status == discord.Status.online:
-                o.append(m)
+        if table.find_one(key="vote_cmd_status") is None or table.find_one(key="vote_cmd_status")["value"] == "off":
+            await ctx.send("Sorry! The server owner has disabled the vote commands! Maybe ask them nicely to enable them?")
+            return
         if table.find_one(key="lvl1_vote_time") is None:
             sec = 60
             m, s = divmod(60, 60)
@@ -270,7 +280,8 @@ class Moderation:
 
     @commands.group()
     async def room(self, ctx):
-        if ctx.invoked_subcommand == None:
+        """Room managment commands"""
+        if ctx.invoked_subcommand is None:
             await ctx.send("you must use a valid subcommand :3")
 
     @room.command()
@@ -297,8 +308,8 @@ class Moderation:
         db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
         table = db["rooms"]
         table.insert(dict(channel=channel.id, role=role.id, owner=ctx.author.id))
-        await ctx.send("creat0red")
-        i = await channel.send("send teh room commands comrade")
+        await ctx.send("Room created!")
+        i = await channel.send("Send the various room commands to manage this room!")
         await i.pin()
         await channel.edit(topic="Owner: {}".format(ctx.author.mention))
 
@@ -428,7 +439,7 @@ class Moderation:
             await ctx.send("Sorry! You must have the **Manage Server** permission to edit the configuation!")
             return
         elif ctx.invoked_subcommand is None:
-            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"off\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands, in the format of \"XdXhXmXs\" Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"off\"\n\nreport_role     Changes what role users need to have to recive reports. Defaults to \"Mod\"```")
+            await ctx.send("```Values you can edit using p!config set:\n\nmuted_role     This changes the muted role. Defaults to \"muted\"\n\nstarboard_channel     Changes what the starboard channel is named. Set to \"off\" to turn starboard off. Defaults to \"off\"\n\nlvl1_vote_time     Changes the vote time for the change nickname, mute, and channel topic Mod Vote commands, in the format of \"XdXhXmXs\" Defaults to \"1m\"\n\nlvl2_vote_time     Same thing as lvl1_vote_time, but for kicks and bans. Defaults to \"5m\"\n\nmodlog_channel     The name of the channel that the bot will post modlog messages to. Set to \"off\" to turn the modlog off. Defaults to \"off\"\n\nreport_role     Changes what role users need to have to recive reports. Defaults to \"Mod\"\n\nvote_cmd_status     Set to \"on\" or \"off\" if you would like to enable or disable the vote commands. Defaults to \"off\"\n\nwarns_to_kick     The amount of warns needed to kick a user. Defaults to \"2\"\nwarns_to_ban     The same thing as warns_to_kick, but for bans. Defaults to \"3\"```")
 
     @config.command()
     async def set(self, ctx, key, value):
@@ -470,14 +481,31 @@ class Moderation:
                     table.insert(dict(key="modlog_channel", value=value))
                 await ctx.send("Config updated!")
             elif key.lower() == "report_role":
-                if table.find_one(key="report_rolel"):
+                if table.find_one(key="report_role"):
                     table.update(dict(key="report_role", value=value), ["key"])
                 else:
                     table.insert(dict(key="report_role", value=value))
                 await ctx.send("Config updated!")
+            elif key.lower() == "vote_cmd_status":
+                if table.find_one(key="vote_cmd_status"):
+                    table.update(dict(key="vote_cmd_status", value=value), ["key"])
+                else:
+                    table.insert(dict(key="vote_cmd_status", value=value))
+                await ctx.send("Config updated!")
+            elif key.lower() == "warns_to_kick":
+                if table.find_one(key="warns_to_kick"):
+                    table.update(dict(key="warns_to_kick", value=value), ["key"])
+                else:
+                    table.insert(dict(key="warns_to_kick", value=value))
+                await ctx.send("Config updated!")
+            elif key.lower() == "warns_to_ban":
+                if table.find_one(key="warns_to_ban"):
+                    table.update(dict(key="warns_to_ban", value=value), ["key"])
+                else:
+                    table.insert(dict(key="warns_to_ban", value=value))
+                await ctx.send("Config updated!")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
-                return
 
     @config.command()
     async def get(self, ctx, key):
@@ -518,6 +546,21 @@ class Moderation:
                     await ctx.send("``report_role``'s current value is: ``{}``".format(table.find_one(key="report_role")["value"]))
                 else:
                     await ctx.send("``report_role``'s current value is: ``Mod``")
+            elif key.lower() == "vote_cmd_status":
+                if table.find_one(key="vote_cmd_status"):
+                    await ctx.send("``vote_cmd_status``'s current value is: ``{}``".format(table.find_one(key="vote_cmd_status")["value"]))
+                else:
+                    await ctx.send("``vote_cmd_status``'s current value is: ``off``")
+            elif key.lower() == "warns_to_kick":
+                if table.find_one(key="warns_to_kick"):
+                    await ctx.send("``warns_to_kick``'s current value is: ``{}``".format(table.find_one(key="warns_to_kick")["value"]))
+                else:
+                    await ctx.send("``warns_to_kick``'s current value is: ``2``")
+            elif key.lower() == "warns_to_ban":
+                if table.find_one(key="warns_to_ban"):
+                    await ctx.send("``warns_to_ban``'s current value is: ``{}``".format(table.find_one(key="warns_to_ban")["value"]))
+                else:
+                    await ctx.send("``warns_to_kick``'s current value is: ``2``")
             else:
                 await ctx.send("Hmm... that's not a valid key!")
                 return
@@ -664,6 +707,118 @@ class Moderation:
             await mlchannel.send(embed=embed)
         await user.remove_roles(role)
         await ctx.send("Done!")
+
+    @commands.command()
+    async def warn(self, ctx, user: discord.Member, reason):
+        """Warns a user"""
+        if not ctx.author.guild_permissions.manage_messages:
+            await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
+            return
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
+        table = db["warns"]
+        if not table.find_one(user=user.id):
+            table.insert(dict(user=user.id, warns=1))
+        else:
+            table.update(dict(user=user.id, warns=table.find_one(user=user.id)["warns"]+1), ["user"])
+        if db["config"].find_one(key="modlog_channel") is not None or db["config"].find_one(key="modlog_channel")["value"] != "off":
+            mlchannel = discord.utils.get(ctx.guild.channels, name=db["config"].find_one(key="modlog_channel")["value"])
+            embed = discord.Embed(color=0xffff00, description="User **{}** has been warned by {} for **{}**".format(user.name, ctx.author.name, reason))
+            embed.set_footer(text="User Warn", icon_url=user.avatar_url)
+            await mlchannel.send(embed=embed)
+        await ctx.send("User warned!")
+        await user.send("You have been warned for **{}**!\nYou now have **{}** warnings!".format(reason, table.find_one(user=user.id)["warns"]))
+        if db["config"].find_one(key="warns_to_kick") is not None:
+            if table.find_one(user=user.id)["warns"] == db["config"].find_one(key="warns_to_kick")["value"]:
+                await user.send("Oops! You messed up one too many times, so you have been **kicked**! You *are* allowed to rejoin, but this time be REALLY careful, aight?")
+                await user.kick()
+        else:
+            if table.find_one(user=user.id)["warns"] == 2:
+                await user.send("Oops! You messed up one too many times, so you have been **kicked**! You *are* allowed to rejoin, but this time be REALLY careful, aight?")
+                await user.kick()
+        if db["config"].find_one(key="warns_to_ban") is not None:
+            if table.find_one(user=user.id)["warns"] == db["config"].find_one(key="warns_to_ban")["value"]:
+                await user.send("Oops! You messed up one too many times, so you have been **banned**! You *are not* allowed to rejoin, sadly.")
+                await user.ban()
+        else:
+            if table.find_one(user=user.id)["warns"] == 3:
+                await user.send("Oops! You messed up one too many times, so you have been **banned**! You *are not* allowed to rejoin, sadly.")
+                await user.ban()
+
+    @commands.command()
+    async def warns(self, ctx, user: discord.Member):
+        """Checks how many warns a user has"""
+        if not ctx.author.guild_permissions.manage_messages:
+            await ctx.send("Sorry! You must have the **Manage Messages** permission to use this command!")
+            return
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
+        table = db["warns"]
+        if not table.find_one(user=user.id):
+            await ctx.send("This user has **0** warns!")
+        else:
+            await ctx.send("This user has **{}** warns!".format(table.find_one(user=user.id)["warns"]))
+
+    async def toggleRole(self, user: discord.Member, role):
+        if discord.utils.get(user.roles, name=role):
+            await user.remove_roles(discord.utils.get(user.guild.roles, name=role))
+            return False
+        else:
+            await user.add_roles(discord.utils.get(user.guild.roles, name=role))
+            return True
+
+    @commands.group(invoke_without_command=True)
+    async def selfassign(self, ctx, *, role):
+        """Gives yourself one of the self-assignable roles. If you have the role, run this command again to remove it"""
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
+        table = db["sar"]
+        if table.find_one(name=role):
+            if await Moderation.toggleRole(self, ctx.author, role) is True:
+                await ctx.send("You now have the **{}** role!".format(role))
+            elif await Moderation.toggleRole(self, ctx.author, role) is False:
+                await ctx.send("You no longer have the **{}** role!".format(role))
+        else:
+            await ctx.send("Either that role dosen't exist, or it isn't self-assignable!")
+
+    @selfassign.command()
+    async def add(self, ctx, *, role):
+        """Adds a role to the self-assignable roles list"""
+        if not ctx.author.guild_permissions.manage_roles:
+            await ctx.send("Sorry! You must have the **Manage Roles** permission to use this command!")
+            return
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
+        table = db["sar"]
+        if table.find_one(name=role):
+            await ctx.send("This role is already on the self-assignable roles list!")
+            return
+        table.insert(dict(name=role))
+        await ctx.send("Role added!")
+
+    @selfassign.command()
+    async def remove(self, ctx, *, role):
+        """Removes a role from the self-assignable roles list"""
+        if not ctx.author.guild_permissions.manage_roles:
+            await ctx.send("Sorry! You must have the **Manage Roles** permission to use this command!")
+            return
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
+        table = db["sar"]
+        if not table.find_one(name=role):
+            await ctx.send("This role is not on the self-assignable roles list!")
+            return
+        table.delete(name=role)
+        await ctx.send("Role removed!")
+
+    @selfassign.command()
+    async def list(self, ctx):
+        """List all roles in the self-assignable roles list"""
+        db = dataset.connect("sqlite:///servers/{}.db".format(ctx.guild.id))
+        table = db["sar"]
+        roles = []
+        for r in table.all():
+            roles.append(r["name"])
+        if not roles:
+            await ctx.send("No self-assignable roles found!")
+            return
+        embed = discord.Embed(color=0xffff00, title="Self-Assignable Roles", description="\n".join(roles))
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Moderation(bot))
