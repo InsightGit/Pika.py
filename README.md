@@ -15,8 +15,6 @@ Oh, you want to run it? Sweet!
 Make sure you got the discord.py rewrite installed, and these packages aswell:
 ```
 dataset
-pyshorteners
-pokebase
 pytimeparse
 ```
 After that, make sure you edit the **bot owner ID** and the **bot token** in ``bot.py``.
