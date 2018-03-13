@@ -29,6 +29,6 @@ Then run ``bot.py``, and you're off!
 
 # TODO
 - [x] Add a ``!config`` command
-- [ ] More. Commands
-- [ ] Grammer changes and such
-- [ ] Actually get hosting
+- [x] More. Commands
+- [x] Grammer changes and such
+- [x] Actually get hosting
