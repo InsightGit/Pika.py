@@ -5,6 +5,8 @@
   <img src="https://discordbots.org/api/widget/412042272268615680.svg" />
 </a>
 
+**No, we aren't dead. Updates have been going on behind the scenes. Join the Discord for updates, Akari is coming soon, I promise**
+
 # Features
 * An awesome Moderation system, including an unique voting system for nickname changes, kicks, bans, and mutes!
 * Many fun commands!
