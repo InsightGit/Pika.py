@@ -18,3 +18,8 @@
 * Everyone on the me_irl discord for helping out!
 * All of the very helpful testers on the [Discord server!](https://discord.gg/8vFPUhV)
 * You, for reading this!
+
+# TODO
+[] Fix all exploits and bugs
+[] Clean up things
+[] Music
